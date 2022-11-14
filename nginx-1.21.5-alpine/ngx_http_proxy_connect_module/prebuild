@@ -1,0 +1,10 @@
+MODULE_DIR=$1
+
+if [ "$MODULE_DIR" = "" ]; then
+   echo "module dir is null"
+   MODULE_DIR=/tmp/ngx_http_proxy_connect_module
+fi
+
+#patch -d nginx/ -p 1 < $MODULE_DIR/patch/proxy_connect_rewrite_102101.patch
+
+patch -p 1 < $MODULE_DIR/patch/proxy_connect_rewrite_102101.patch

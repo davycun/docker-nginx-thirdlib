@@ -1,0 +1,26 @@
+MODULE_DIR=$1
+
+if [ "$MODULE_DIR" = "" ]; then
+   echo "module dir is null"
+   MODULE_DIR=/usr/local/src/ngx_waf
+fi
+
+
+
+cd $MODULE_DIR
+
+apk update
+apk add --no-cache uthash-dev  git curl gnupg python3 py3-pip flex bison
+pip3 install lastversion
+
+cd $MODULE_DIR && git clone https://github.com/libinjection/libinjection.git inc/libinjection
+cd $MODULE_DIR && make parser
+cd /usr/local/src
+git clone https://github.com/troydhanson/uthash.git
+export LIB_UTHASH=/usr/local/src/uthash
+git clone https://github.com/jedisct1/libsodium.git --branch ${LIB_SODIUM_VER} libsodium-src
+cd libsodium-src
+./configure --prefix=/usr/local/src/libsodium --with-pic
+make -j$(nproc) && make check -j$(nproc) && make install
+export LIB_SODIUM=/usr/local/src/libsodium
+cd ..
