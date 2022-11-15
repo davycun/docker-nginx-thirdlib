@@ -1,1 +1,1 @@
-uthash-dev  git curl gnupg python3 py3-pip flex bison
+uthash-dev  git curl gnupg python3 py3-pip flex bison automake autoconf libtool

@@ -8,7 +8,8 @@ RUN set -ex \
     && if [ "$ENABLED_MODULES" = "" ]; then \
         echo "No additional modules enabled, exiting"; \
         exit 1; \
-    fi
+    fi \
+    && mkdir -p /usr/local/src/build/
 
 WORKDIR /usr/local/src/
 COPY ./ /usr/local/src/build/
@@ -31,9 +32,9 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/' /etc/apk/repositories 
                 # some modules require build dependencies
                 if [ -f /usr/local/src/build/$module/build-deps ]; then \
                     echo "Installing $module build dependencies"; \
-                    apk update && apk add $(cat /srv/$module/build-deps | xargs); \
+                    apk update && apk add $(cat /usr/local/src/build/$module/build-deps | xargs); \
                 fi; \
-                curl -o /usr/local/src/$module.tar.gz -L $(cat /srv/$module/source | xargs); \
+                curl -o /usr/local/src/$module.tar.gz -L $(cat /usr/local/src/build/$module/source | xargs); \
                 tar -xf /usr/local/src/$module.tar.gz -C /usr/local/src/; \
                 mv /usr/local/src/${module}-* /usr/local/src/$module; \
                 if [ -f /usr/local/src/build/$module/prebuild ]; then \
@@ -52,13 +53,14 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/' /etc/apk/repositories 
     && CONFARGS=${CONFARGS/-Os -fomit-frame-pointer -g/-Os} \
     && export CONFARGS="$CONFARGS $BUILT_MODULES" \
     && echo "config for nginx with $CONFARGS" \
-    && ./configure --with-compat $CONFARGS \
+    && cd /usr/local/src/nginx \
+    && ./configure --with-compat --with-cc-opt='-fstack-protector-strong' $CONFARGS \
     && make modules \
     && mkdir -p /modules/ \
     && cp -a ./objs/*.so /modules/ \
     && ls -la /modules/
 
 FROM nginx:${NGINX_VERSION}-alpine
-COPY --from=builder /modules/ /etc/nginx/modules/
+COPY --from=builder /modules/ /usr/lib/nginx/modules/
 
 
