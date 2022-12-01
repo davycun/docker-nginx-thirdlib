@@ -9,4 +9,4 @@ fi
 
 cd /usr/local/src/nginx
 
-patch -p 1 < $MODULE_DIR/patch/proxy_connect_rewrite_102101.patch
+patch -p1 < $MODULE_DIR/patch/proxy_connect_rewrite_102101.patch
